@@ -43,7 +43,7 @@ jobs:
             git fetch --all
             # Check if the branch exists remotely
             if git ls-remote --heads origin ${{ github.event.inputs.client1_branch }}; then
-                if ["'${{ github.event.inputs.client1_branch }}'" == "main"] && ["'${{ github.event.inputs.client1_branch }}'" == "master"]; then 
+                if [[ "${{ github.event.inputs.client1_branch }}" == "main" ]] || [[ "${{ github.event.inputs.client1_branch }}" == "master" ]]; then
                     echo "Skip checkout for main/master branch - default"
                 else
                     # If the branch exists remotely, checkout and track the branch
@@ -66,11 +66,11 @@ jobs:
             git fetch --all
             # Check if the branch exists remotely
             if git ls-remote --heads origin ${{ github.event.inputs.client2_branch }}; then
-                if ["'${{ github.event.inputs.client2_branch }}'" == "main"] && ["'${{ github.event.inputs.client2_branch }}'" == "master"]; then 
+                if [[ "${{ github.event.inputs.client2_branch }}" == "main" ]] || [[ "${{ github.event.inputs.client2_branch }}" == "master" ]]; then
                     echo "Skip checkout for main/master branch - default"
                 else
                     # If the branch exists remotely, checkout and track the branch
-                    git checkout -t origin/${{ github.event.inputs.client1_branch }}
+                    git checkout -t origin/${{ github.event.inputs.client2_branch }}
                 fi
             else
                 # If the branch doesn't exist remotely, exit with error
