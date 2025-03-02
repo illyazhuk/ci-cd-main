@@ -40,16 +40,15 @@ jobs:
       - name: Update submodule client1
         working-directory: default/procentric/app/client1
         run: |
-          git fetch origin
-          git checkout ${{ github.event.inputs.client1_branch }}
-          git pull origin ${{ github.event.inputs.client1_branch }}
+          git fetch --all
+          git checkout -B ${{ github.event.inputs.client1_branch }} origin/${{ github.event.inputs.client1_branch }}
 
       - name: Update submodule client2
         working-directory: default/remote/client2
         run: |
-          git fetch origin
-          git checkout ${{ github.event.inputs.client2_branch }}
-          git pull origin ${{ github.event.inputs.client2_branch }}
+          git fetch --all
+          git checkout -B ${{ github.event.inputs.client2_branch }} origin/${{ github.event.inputs.client2_branch }}
+  
 
       - name: Update main repository submodule pointers
         run: |
