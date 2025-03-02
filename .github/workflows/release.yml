@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Enter the release version (e.g. v1.2.3)'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: recursive
+
+      - name: Update submodule client1
+        working-directory: default/procentric/app/client1
+        run: |
+          git checkout main
+          git pull origin main
+
+      - name: Update submodule client2
+        working-directory: default/remote/client2
+        run: |
+          git checkout main
+          git pull origin main
+
+      - name: Update main repository submodule pointers
+        run: |
+          git submodule update --remote
+
+      - name: Commit updated submodule pointers
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add .
+          # Only commit if there are changes
+          git diff-index --quiet HEAD || git commit -m "Update submodules to latest main branch"
+
+      - name: Push changes to main branch
+        run: |
+          git push origin main
+
+      - name: Create and push release tag
+        run: |
+          RELEASE_VERSION=${{ github.event.inputs.release_version }}
+          git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+          git push origin "$RELEASE_VERSION"
