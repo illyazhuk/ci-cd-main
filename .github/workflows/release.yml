@@ -70,7 +70,7 @@ jobs:
                     echo "Skip checkout for main/master branch - default"
                 else
                     # If the branch exists remotely, checkout and track the branch
-                    git checkout -t origin/${{ github.event.inputs.client2_branch }}
+                    git switch --track origin/${{ github.event.inputs.client2_branch }}
                 fi
             else
                 # If the branch doesn't exist remotely, exit with error
