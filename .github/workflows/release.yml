@@ -65,14 +65,15 @@ jobs:
         working-directory: default/remote/client2
         run: |
             git status
-            git fetch origin
+            git fetch --all
             # Check if the branch exists remotely
             if git ls-remote --heads origin ${{ github.event.inputs.client2_branch }}; then
                 if [[ "${{ github.event.inputs.client2_branch }}" == "main" ]] || [[ "${{ github.event.inputs.client2_branch }}" == "master" ]]; then
                     echo "Skip checkout for main/master branch - default"
                 else
                     # If the branch exists remotely, checkout and track the branch
-                    git switch -c ${{ github.event.inputs.client2_branch }} origin/${{ github.event.inputs.client2_branch }}
+                    git fetch origin ${{ github.event.inputs.client2_branch }} 
+                    git switch -c ${{ github.event.inputs.client2_branch }} --track origin/${{ github.event.inputs.client2_branch }}
                 fi
             else
                 # If the branch doesn't exist remotely, exit with error
