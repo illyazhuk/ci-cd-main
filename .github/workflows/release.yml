@@ -51,7 +51,7 @@ jobs:
             if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
                 echo "Skip checkout for main/master branch - default"
 
-            elif git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"; then
+            elif git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"| grep -q "${{ github.event.inputs.release_branch }}"; then
                 echo "Error: ${{ github.event.inputs.release_branch }} already exists on Remote"
                 exit 1
             else
