@@ -1,0 +1,6 @@
+[submodule "default/procentric/app/client1"]
+	path = default/procentric/app/client1
+	url = git@github.com:illyazhuk/client1.git
+[submodule "default/remote/client2"]
+	path = default/remote/client2
+	url = git@github.com:illyazhuk/client2.git
