@@ -40,17 +40,25 @@ jobs:
       - name: Update submodule client1
         working-directory: default/procentric/app/client1
         run: |
-            git fetch --all
-            git checkout ${{ github.event.inputs.client1_branch }} || git checkout -b ${{ github.event.inputs.client1_branch }} origin/${{ github.event.inputs.client1_branch }}
-            git pull origin ${{ github.event.inputs.client1_branch }}
+            git fetch origin
+            if git show-ref --verify --quiet refs/remotes/origin/${{ github.event.inputs.client1_branch }}; then
+                git checkout -t origin/${{ github.event.inputs.client1_branch }}
+            else
+                echo "Error: Branch '${{ github.event.inputs.client1_branch }}' does not exist in origin."
+                exit 1
+            fi
 
 
       - name: Update submodule client2
         working-directory: default/remote/client2
         run: |
-            git fetch --all
-            git checkout ${{ github.event.inputs.client2_branch }} || git checkout -b ${{ github.event.inputs.client2_branch }} origin/${{ github.event.inputs.client2_branch }}
-            git pull origin ${{ github.event.inputs.client2_branch }}
+            git fetch origin
+            if git show-ref --verify --quiet refs/remotes/origin/${{ github.event.inputs.client2_branch }}; then
+                git checkout -t origin/${{ github.event.inputs.client2_branch }}
+            else
+                echo "Error: Branch '${{ github.event.inputs.client2_branch }}' does not exist in origin."
+                exit 1
+            fi
 
   
 
