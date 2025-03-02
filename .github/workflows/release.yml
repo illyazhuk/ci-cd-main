@@ -8,11 +8,15 @@ on:
         required: true
       client1_branch:
         description: 'Branch for client1 (default: main)'
-        required: false
+        required: true
         default: 'main'
       client2_branch:
         description: 'Branch for client2 (default: main)'
-        required: false
+        required: true
+        default: 'main'
+      release_branch:
+        description: 'Branch for where to release (default: main)'
+        required: true
         default: 'main'
 
 jobs:
@@ -41,7 +45,19 @@ jobs:
         working-directory: .
         run: |
             git submodule update --init --recursive  # Ensure submodules are properly initialized
-        
+
+      - name: Checkout to a new branch
+        run: |
+            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
+                echo "Skip checkout for main/master branch - default"
+
+            elif git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"; then
+                echo "Error: ${{ github.event.inputs.release_branch }} already exists on Remote"
+                exit 1
+            else
+                git checkout -b ${{ github.event.inputs.release_branch }}
+            fi
+            
       - name: Checkout submodule client1
         uses: actions/checkout@v3
         with:
@@ -66,12 +82,28 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
 
-      - name: Push changes to main branch
+      - name: Push changes to target branch
         run: |
-          git push origin main
+            # Push to the target branch, ensuring it doesn't override an existing branch (except master/main)
+            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
+                git push
+            else
+                # Make sure the branch is not already pushed to prevent accidental overwrite
+                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"; then
+                    echo "Branch already exists on remote, not pushing."
+                    exit 1
+                else
+                    git push --set-upstream origin ${{ github.event.inputs.release_branch }}
+                fi
+            fi
 
       - name: Create and push release tag
         run: |
-          RELEASE_VERSION=${{ github.event.inputs.release_version }}
-          git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
-          git push origin "$RELEASE_VERSION"
+            # Push to the target branch, ensuring it doesn't override an existing branch (except master/main)
+            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
+                RELEASE_VERSION=${{ github.event.inputs.release_version }}
+                git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+                git push origin "$RELEASE_VERSION"
+            else
+                echo "Skip Tag Upload"
+            fi
