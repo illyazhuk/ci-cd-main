@@ -6,11 +6,31 @@ on:
       release_version:
         description: 'Enter the release version (e.g. v1.2.3)'
         required: true
+      client1_branch:
+        description: 'Branch for client1 (default: main)'
+        required: false
+        default: 'main'
+      client2_branch:
+        description: 'Branch for client2 (default: main)'
+        required: false
+        default: 'main'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch available branches for client1
+        run: |
+          echo "Fetching available branches for client1..."
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/illyazhuk/client1/branches" | jq '.[].name'
+
+      - name: Fetch available branches for client2
+        run: |
+          echo "Fetching available branches for client2..."
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/illyazhuk/client2/branches" | jq '.[].name'
+
       - name: Checkout repository with submodules
         uses: actions/checkout@v3
         with:
@@ -20,14 +40,16 @@ jobs:
       - name: Update submodule client1
         working-directory: default/procentric/app/client1
         run: |
-          git checkout main
-          git pull origin main
+          git fetch origin
+          git checkout ${{ github.event.inputs.client1_branch }}
+          git pull origin ${{ github.event.inputs.client1_branch }}
 
       - name: Update submodule client2
         working-directory: default/remote/client2
         run: |
-          git checkout main
-          git pull origin main
+          git fetch origin
+          git checkout ${{ github.event.inputs.client2_branch }}
+          git pull origin ${{ github.event.inputs.client2_branch }}
 
       - name: Update main repository submodule pointers
         run: |
@@ -38,8 +60,7 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add .
-          # Only commit if there are changes
-          git diff-index --quiet HEAD || git commit -m "Update submodules to latest main branch"
+          git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
 
       - name: Push changes to main branch
         run: |
