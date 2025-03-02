@@ -89,7 +89,7 @@ jobs:
                 git push
             else
                 # Make sure the branch is not already pushed to prevent accidental overwrite
-                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"; then
+                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"| grep -q "${{ github.event.inputs.release_branch }}"; then
                     echo "Branch already exists on remote, not pushing."
                     exit 1
                 else
