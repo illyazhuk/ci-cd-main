@@ -90,8 +90,8 @@ jobs:
             exit 1
           fi
 
-          - name: Check if release branch already exists
-            run: |
+      - name: Check if release branch already exists
+        run: |
               # Check if the release branch is main or master
               if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
                 echo "Skip validation for main/master branch"
