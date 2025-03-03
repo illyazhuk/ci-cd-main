@@ -121,7 +121,7 @@ jobs:
     
           if [ "$LATEST_TAG" = "none" ]; then
             echo "Warning: No tags found in the repository."
-            LATEST_TAG="v0.0.0"  # Set a default version if needed
+            LATEST_TAG="0.0.0"  # Set a default version if needed
           fi
           
           # If no tags are found, set a default version
