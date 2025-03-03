@@ -32,8 +32,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all branches and history are fetched
+
       - name: Checking user input parameters
         run: |
+          # Ensure origin is correctly set
+          git remote -v || (echo "Error: No remote repository found." && exit 1)
+
           # Try fetching the remote branches and check if the specific branch exists
           if git ls-remote --heads origin "${{ github.event.inputs.build_origin_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.build_origin_branch }}"; then
             echo "Found ${{ github.event.inputs.build_origin_branch }} on remote"
@@ -146,13 +154,14 @@ jobs:
                 git checkout -b ${{ github.event.inputs.release_branch }}
             fi
             
+    
       - name: Checkout submodule client1
         uses: actions/checkout@v3
         with:
-            token: '${{ secrets.GITHUB_TOKEN }}'
-            repository: illyazhuk/client1
-            path: default/procentric/app/client1
-            ref: ${{ github.event.inputs.client1_branch }} 
+              token: '${{ secrets.GITHUB_TOKEN }}'
+              repository: illyazhuk/client1
+              path: default/procentric/app/client1
+              ref: ${{ github.event.inputs.client1_branch }} 
       
       - name: Checkout submodule client 2
         uses: actions/checkout@v3
