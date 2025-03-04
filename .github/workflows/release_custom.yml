@@ -1,4 +1,4 @@
-name: Release
+name: Release custom
 
 on:
   workflow_dispatch:
@@ -7,10 +7,6 @@ on:
         description: 'Enter origin branch (CI-CD-main repo)'
         required: true
         default: 'main'
-      use_main_branch:
-        description: 'Build with default branch: main'
-        type: boolean
-        required: false
       release_version:
         description: 'Enter the release version (e.g. v1.2.3)'
         required: true
