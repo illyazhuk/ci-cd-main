@@ -6,6 +6,7 @@ on:
         description: 'Build from main branches'
         default: false
         type: boolean
+        required: true
       release_version:
         description: 'Enter the release version (e.g. v1.2.3)'
         required: true
@@ -27,7 +28,10 @@ jobs:
             echo "CLIENT1_BRANCH=main" >> $GITHUB_ENV
             echo "CLIENT2_BRANCH=main" >> $GITHUB_ENV
             echo "RELEASE_BRANCH=main" >> $GITHUB_ENV
-
+          else
+            echo "Error: checkmark was not set"
+            exit 1
+          fi
       - name: Checkout submodule client1
         uses: actions/checkout@v3
         with:
