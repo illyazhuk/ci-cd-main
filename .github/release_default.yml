@@ -1,0 +1,87 @@
+name: Release default
+on:
+  workflow_dispatch:
+    inputs:
+      main_checkmark:
+        description: 'Build from main branches'
+        default: false
+        type: boolean
+      release_version:
+        description: 'Enter the release version (e.g. v1.2.3)'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all branches and history are fetched
+
+      - name: Set up branches based on checkmark input
+        id: set_branches
+        run: |
+          if [ "${{ github.event.inputs.main_checkmark }}" == "true" ]; then
+            echo "Building from main branches"
+            echo "CLIENT1_BRANCH=main" >> $GITHUB_ENV
+            echo "CLIENT2_BRANCH=main" >> $GITHUB_ENV
+            echo "RELEASE_BRANCH=main" >> $GITHUB_ENV
+
+      - name: Checkout submodule client1
+        uses: actions/checkout@v3
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          repository: illyazhuk/client1
+          path: default/procentric/app/client1
+          ref: ${{ env.CLIENT1_BRANCH }}
+
+      - name: Checkout submodule client2
+        uses: actions/checkout@v3
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          repository: illyazhuk/client2
+          path: default/remote/client2
+          ref: ${{ env.CLIENT2_BRANCH }}
+
+      - name: Checkout to a new branch
+        run: |
+          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+            echo "Skip checkout for main/master branch"
+          elif git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
+            echo "Error: ${{ env.RELEASE_BRANCH }} already exists on Remote"
+            exit 1
+          else
+            git checkout -b ${{ env.RELEASE_BRANCH }}
+          fi
+
+      - name: Commit updated submodule pointers
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git diff
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
+
+      - name: Push changes to target branch
+        run: |
+          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+            git push
+          else
+            if git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
+              echo "Branch already exists on remote, not pushing."
+              exit 1
+            else
+              git push --set-upstream origin ${{ env.RELEASE_BRANCH }}
+            fi
+          fi
+
+      - name: Create and push release tag
+        run: |
+          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+            RELEASE_VERSION=${{ github.event.inputs.release_version }}
+            git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+            git push origin "$RELEASE_VERSION"
+          else
+            echo "Skip Tag Upload"
+          fi

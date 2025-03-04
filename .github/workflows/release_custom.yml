@@ -1,4 +1,4 @@
-name: Release
+name: Release custom
 
 on:
   workflow_dispatch:
@@ -7,10 +7,6 @@ on:
         description: 'Enter origin branch (CI-CD-main repo)'
         required: true
         default: 'main'
-      use_main_branch:
-        description: 'Build with default branch: main'
-        type: boolean
-        required: false
       release_version:
         description: 'Enter the release version (e.g. v1.2.3)'
         required: true
@@ -32,8 +28,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all branches and history are fetched
+
       - name: Checking user input parameters
         run: |
+          # Ensure origin is correctly set
+          git remote -v || (echo "Error: No remote repository found." && exit 1)
+
           # Try fetching the remote branches and check if the specific branch exists
           if git ls-remote --heads origin "${{ github.event.inputs.build_origin_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.build_origin_branch }}"; then
             echo "Found ${{ github.event.inputs.build_origin_branch }} on remote"
@@ -82,8 +86,8 @@ jobs:
             exit 1
           fi
 
-          - name: Check if release branch already exists
-            run: |
+      - name: Check if release branch already exists
+        run: |
               # Check if the release branch is main or master
               if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
                 echo "Skip validation for main/master branch"
@@ -109,8 +113,13 @@ jobs:
           fi
 
           # Get the latest tag from the repository
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-
+             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+    
+          if [ "$LATEST_TAG" = "none" ]; then
+            echo "Warning: No tags found in the repository."
+            LATEST_TAG="0.0.0"  # Set a default version if needed
+          fi
+          
           # If no tags are found, set a default version
           if [ -z "$LATEST_TAG" ]; then
             echo "No tags found in the repository. This will be the first release."
@@ -146,13 +155,14 @@ jobs:
                 git checkout -b ${{ github.event.inputs.release_branch }}
             fi
             
+    
       - name: Checkout submodule client1
         uses: actions/checkout@v3
         with:
-            token: '${{ secrets.GITHUB_TOKEN }}'
-            repository: illyazhuk/client1
-            path: default/procentric/app/client1
-            ref: ${{ github.event.inputs.client1_branch }} 
+              token: '${{ secrets.GITHUB_TOKEN }}'
+              repository: illyazhuk/client1
+              path: default/procentric/app/client1
+              ref: ${{ github.event.inputs.client1_branch }} 
       
       - name: Checkout submodule client 2
         uses: actions/checkout@v3
