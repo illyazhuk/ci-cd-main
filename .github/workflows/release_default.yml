@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
       - name: Set up branches based on checkmark input
-        id: set_branches #Maybe delete?
+        id: set_branches
         run: |
           echo "Validating checkmark set"
           if [ "${{ github.event.inputs.main_checkmark }}" == "true" ]; then
@@ -33,6 +33,32 @@ jobs:
             echo "Error: checkmark was not set"
             exit 1
           fi
+
+      - name: Auto-increment the release version
+        id: increment_version
+        run: |
+          echo "Fetching the latest tag"
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.1")
+
+          echo "Extracting major, minor, patch from the latest tag"
+          VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+          if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+          else
+            NEW_VERSION="v0.0.1"
+          fi
+          echo "New version $NEW_VERSION"
+          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Create and Push new version tag #????????
+        run: |
+         git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+         git push origin "$RELEASE_VERSION" 
+
       - name: Checkout submodule client1
         uses: actions/checkout@v4
         with:

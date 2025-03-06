@@ -54,7 +54,7 @@ jobs:
           
           # Check if curl was successful
           if [ $? -ne 0 ]; then
-            echo "Error: Failed to fetch branches for client1" # Edited from "Failed to fetch branches from GitHub API" to "Failed to fetch branches for client1"
+            echo "Error: Failed to fetch branches for client1"
             exit 1
           fi
           echo "Successfully fetched available branches from remote"
@@ -75,7 +75,7 @@ jobs:
           
           # Check if curl was successful
           if [ $? -ne 0 ]; then
-            echo "Error: Failed to fetch branches for client2" #Edited from "Failed to fetch branches from GitHub API" to "Failed to fetch branches for client2" 
+            echo "Error: Failed to fetch branches for client2" 
             exit 1
           fi
           echo "Successfully fetched available branches from remote"
