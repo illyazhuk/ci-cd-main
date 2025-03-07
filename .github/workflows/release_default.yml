@@ -77,25 +77,6 @@ jobs:
           echo "Creating commit with updates for submodules"
           git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
 
-      - name: Push changes to target branch
-        run: |
-          echo "Validating possibility to push changes to target branch"
-          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
-            echo "Target branch is main - Push updated state"
-            git push
-
-          else
-            echo "Ensure target branch would not be overwritten"
-            if git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
-              echo "Branch already exists on remote, not pushing."
-              exit 1
-
-            else
-              echo "Create upstream to a new target branch"
-              git push --set-upstream origin ${{ env.RELEASE_BRANCH }}
-            fi
-          fi
-
       - name: manage-release-version
         run: |
             USER_VERSION_VALID=false
@@ -133,13 +114,13 @@ jobs:
                 echo "Extracting major, minor, patch from the latest tag"
                 VERSION_PATTERN="^v?([0-9]+)\.([0-9]+)\.([0-9]+)$"
                 if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
-                MAJOR="${BASH_REMATCH[1]}"
-                MINOR="${BASH_REMATCH[2]}"
-                PATCH="${BASH_REMATCH[3]}"
-                PATCH=$((PATCH + 1))
-                NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+                  MAJOR="${BASH_REMATCH[1]}"
+                  MINOR="${BASH_REMATCH[2]}"
+                  PATCH="${BASH_REMATCH[3]}"
+                  PATCH=$((PATCH + 1))
+                  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
                 else
-                NEW_VERSION="0.0.1"
+                  NEW_VERSION="0.0.1"
                 fi
             fi
 
@@ -149,14 +130,43 @@ jobs:
             else
                 # Compare versions
                 if [[ "$(echo -e "$NEW_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$NEW_VERSION" ]]; then
-                echo "Error: Release version $NEW_VERSION must be higher than the latest tag $LATEST_TAG."
-                exit 1
+                  echo "Error: Release version $NEW_VERSION must be higher than the latest tag $LATEST_TAG."
+                  exit 1
                 else
-                echo "Release version $NEW_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                  echo "Release version $NEW_VERSION is valid and higher than the latest tag $LATEST_TAG."
                 fi
             fi
+            echo "RELEASE_TAG=$NEW_VERSION" >> $GITHUB_ENV
 
-
+      - name: Push changes to target branch
+        run: |
+            echo "Validating possibility to push changes to target branch"
+            if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+              echo "Target branch is main - Push updated state"
+              git push
+    
+            else
+              echo "Ensure target branch would not be overwritten"
+              if git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
+                echo "Branch already exists on remote, not pushing."
+                exit 1
+    
+              else
+                  echo "Create upstream to a new target branch"
+                  git push --set-upstream origin ${{ env.RELEASE_BRANCH }}
+              fi
+            fi
+    
+      - name: Create and push release tag
+        run: |
+            echo "Configuring release tag"
+            if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+                echo "Target branch is main - create a release tag"
+                git tag -a "env.RELEASE_TAG" -m "Release $RELEASE_TAG"
+                git push origin "$RELEASE_TAG"
+            else
+                echo "Custom target branch - release tag is not allowed"
+            fi
           
       - name: Automate pull request
         uses: peter-evans/create-pull-request@v7
