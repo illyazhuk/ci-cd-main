@@ -96,45 +96,67 @@ jobs:
             fi
           fi
 
-      - name: Auto-increment the release version and push the release tag
-        id: increment_version
+      - name: manage-release-version
         run: |
-          echo "Configuring release tag"
-          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
-            echo "Target branch is main - create a release tag"
-            VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
-            RELEASE_VERSION=${{ github.event.inputs.release_version }}
-            if [[ "$RELEASE_VERSION" =~ $VERSION_PATTERN ]]; then
-              echo "Given release version is valid"
+            USER_VERSION_VALID=false
+            # Get the release version from the input
+            RELEASE_VERSION="${{ github.event.inputs.release_version }}"
+            echo "Validate release version compliance"
+    
+            # Validate the version format (e.g. v1.2.3)
+            if [[ ! "$RELEASE_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "Error: Invalid version format. The version should be in the format (e.g. v1.2.3)"
+                #exit 1 # Uncomment this if you want to terminate when the version is invalid
+            else
+                USER_VERSION_VALID=true
             fi
-          fi
 
-          echo "Fetching the latest tag"
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            echo "Fetching latest tag from repo"
+            # Get the latest tag from the repository
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
 
-          echo "Extracting major, minor, patch from the latest tag"
-          VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
-          if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
-            MAJOR="${BASH_REMATCH[1]}"
-            MINOR="${BASH_REMATCH[2]}"
-            PATCH="${BASH_REMATCH[3]}"
-            PATCH=$((PATCH + 1))
-            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-          else
-            NEW_VERSION="v0.0.1"
-          fi
+            if [ "$LATEST_TAG" = "none" ]; then
+                echo "Warning: No tags found in the repository."
+                LATEST_TAG="0.0.0"  # Set a default version if needed
+            fi
 
-          if [[ ! "$MAJOR" =~ ^[0-9]+$ ]] || [[ ! "$MINOR" =~ ^[0-9]+$ ]] || [[ ! "$PATCH" =~ ^[0-9]+$ ]]; then
-            echo "Error: Version subsequence is not correct"
-            exit 1
-          else 
-            echo "New version $NEW_VERSION"
-            echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-            git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
-            git push origin "$RELEASE_VERSION"
-          else
-            echo "Custom target branch - release tag is not allowed"
-          fi
+            # Check if user version is greater than latest tag
+            if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
+                echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
+                USER_VERSION_VALID=false
+            fi
+    
+            # If user input is valid, use the user version; otherwise, auto-increment
+            if [ "$USER_VERSION_VALID" = true ]; then
+                NEW_VERSION="$RELEASE_VERSION"
+            else
+                echo "Extracting major, minor, patch from the latest tag"
+                VERSION_PATTERN="^v?([0-9]+)\.([0-9]+)\.([0-9]+)$"
+                if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
+                MAJOR="${BASH_REMATCH[1]}"
+                MINOR="${BASH_REMATCH[2]}"
+                PATCH="${BASH_REMATCH[3]}"
+                PATCH=$((PATCH + 1))
+                NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+                else
+                NEW_VERSION="0.0.1"
+                fi
+            fi
+
+            # If no tags are found, set a default version
+            if [ -z "$LATEST_TAG" ]; then
+                echo "No tags found in the repository. This will be the first release."
+            else
+                # Compare versions
+                if [[ "$(echo -e "$NEW_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$NEW_VERSION" ]]; then
+                echo "Error: Release version $NEW_VERSION must be higher than the latest tag $LATEST_TAG."
+                exit 1
+                else
+                echo "Release version $NEW_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                fi
+            fi
+
+
           
       - name: Automate pull request
         uses: peter-evans/create-pull-request@v7
