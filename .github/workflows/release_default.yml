@@ -102,7 +102,7 @@ jobs:
             fi
 
             # Check if user version is greater than latest tag
-            if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
+            if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" && "$USER_VERSION_VALID" == true ]]; then
                 echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
                 USER_VERSION_VALID=false
             fi
@@ -111,16 +111,16 @@ jobs:
             if [ "$USER_VERSION_VALID" = true ]; then
                 NEW_VERSION="$RELEASE_VERSION"
             else
-                echo "Extracting major, minor, patch from the latest tag"
+                echo "Extracting major, minor, patch from the latest tag $LATEST_TAG"
                 VERSION_PATTERN="^v?([0-9]+)\.([0-9]+)\.([0-9]+)$"
                 if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
-                  MAJOR="${BASH_REMATCH[1]}"
-                  MINOR="${BASH_REMATCH[2]}"
-                  PATCH="${BASH_REMATCH[3]}"
-                  PATCH=$((PATCH + 1))
-                  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+                    MAJOR="${BASH_REMATCH[1]}"
+                    MINOR="${BASH_REMATCH[2]}"
+                    PATCH="${BASH_REMATCH[3]}"
+                    PATCH=$((PATCH + 1))  # Increment the patch version
+                    NEW_VERSION="$MAJOR.$MINOR.$PATCH"
                 else
-                  NEW_VERSION="0.0.1"
+                    NEW_VERSION="0.0.1"
                 fi
             fi
 
@@ -130,13 +130,16 @@ jobs:
             else
                 # Compare versions
                 if [[ "$(echo -e "$NEW_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$NEW_VERSION" ]]; then
-                  echo "Error: Release version $NEW_VERSION must be higher than the latest tag $LATEST_TAG."
-                  exit 1
+                    echo "Error: Release version $NEW_VERSION must be higher than the latest tag $LATEST_TAG."
+                    exit 1
                 else
-                  echo "Release version $NEW_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                    echo "Release version $NEW_VERSION is valid and higher than the latest tag $LATEST_TAG."
                 fi
             fi
+    
+            # Output the new release version to the GitHub environment for later steps
             echo "RELEASE_TAG=$NEW_VERSION" >> $GITHUB_ENV
+
 
       - name: Push changes to target branch
         run: |
