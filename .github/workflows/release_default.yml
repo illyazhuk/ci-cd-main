@@ -93,8 +93,15 @@ jobs:
             fi
 
             echo "Fetching latest tag from repo"
+            # Fetch all tags to ensure the latest tags are available locally
+            git fetch --tags
+
+            # Get the latest tag from the repository by sorting tags
+            LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
+
             # Get the latest tag from the repository
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+            #LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+            echo "Found Latest Tag on repository $LATEST_TAG"
 
             if [ "$LATEST_TAG" = "none" ]; then
                 echo "Warning: No tags found in the repository."
