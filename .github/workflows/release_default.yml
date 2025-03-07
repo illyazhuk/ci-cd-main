@@ -34,31 +34,6 @@ jobs:
             exit 1
           fi
 
-      - name: Auto-increment the release version
-        id: increment_version
-        run: |
-          echo "Fetching the latest tag"
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.1")
-
-          echo "Extracting major, minor, patch from the latest tag"
-          VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
-          if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
-            MAJOR="${BASH_REMATCH[1]}"
-            MINOR="${BASH_REMATCH[2]}"
-            PATCH="${BASH_REMATCH[3]}"
-            PATCH=$((PATCH + 1))
-            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-          else
-            NEW_VERSION="v0.0.1"
-          fi
-          echo "New version $NEW_VERSION"
-          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Create and Push new version tag #????????
-        run: |
-         git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
-         git push origin "$RELEASE_VERSION" 
-
       - name: Checkout submodule client1
         uses: actions/checkout@v4
         with:
@@ -121,14 +96,47 @@ jobs:
             fi
           fi
 
-      - name: Create and push release tag
+      - name: Auto-increment the release version and push the release tag
+        id: increment_version
         run: |
           echo "Configuring release tag"
           if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
             echo "Target branch is main - create a release tag"
+            VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
             RELEASE_VERSION=${{ github.event.inputs.release_version }}
+            if [[ "$RELEASE_VERSION" =~ $VERSION_PATTERN ]]; then
+              echo "Given release version is valid"
+            fi
+          fi
+
+          echo "Fetching the latest tag"
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+
+          echo "Extracting major, minor, patch from the latest tag"
+          VERSION_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+          if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+          else
+            NEW_VERSION="v0.0.1"
+          fi
+
+          if [[ ! "$MAJOR" =~ ^[0-9]+$ ]] || [[ ! "$MINOR" =~ ^[0-9]+$ ]] || [[ ! "$PATCH" =~ ^[0-9]+$ ]]; then
+            echo "Error: Version subsequence is not correct"
+            exit 1
+          else 
+            echo "New version $NEW_VERSION"
+            echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
             git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
             git push origin "$RELEASE_VERSION"
           else
             echo "Custom target branch - release tag is not allowed"
           fi
+          
+      - name: Automate pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
