@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
       - name: Checking user input parameters
-        uses: ./steps/check_user_input
+        uses: ./.github/actions/check_user_input
         with: 
             build_origin_branch: ${{ github.event.inputs.build_origin_branch }}
 
@@ -44,7 +44,7 @@ jobs:
           $TARGET_BRANCH=${{ github.event.inputs.client1_branch }}
 
       - name: Checking if target branch exists
-        uses: ./steps/check_branch_exists
+        uses: ./.github/actions/check_branch_exists
 
       - name: Target branch selection
         run: |
@@ -52,13 +52,13 @@ jobs:
           $TARGET_BRANCH=${{ github.event.inputs.client2_branch }}
 
       - name: Checking if target branch exists
-        uses: ./steps/check_branch_exists
+        uses: ./.github/actions/check_branch_exists
 
       - name: Check if release branch already exists
-        uses: ./steps/check_release_branch_exist 
+        uses: ./.github/actions/check_release_branch_exist 
 
       - name: Validate and check release version
-        uses: ./steps/validate_release_version 
+        uses: ./.github/actions/validate_release_version 
 
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
@@ -67,16 +67,16 @@ jobs:
           submodules: recursive
 
       - name: Checkout to a new branch
-        uses: ./steps/checkout_to_new_branch
+        uses: ./.github/actions/checkout_to_new_branch
             
       - name: Checkout submodules
-        uses: ./steps/checkout_submodules
+        uses: ./.github/actions/checkout_submodules
 
       - name: Commit updated submodule pointers
-        uses: ./steps/commit_updated_submodule_pointers
+        uses: ./.github/actions/commit_updated_submodule_pointers
 
       - name: Push changes to target branch
-        uses: ./steps/push_changes
+        uses: ./.github/actions/push_changes
 
       - name: Create and push release tag
-        uses: ./steps/create_release_tag
+        uses: ./.github/actions/create_release_tag
