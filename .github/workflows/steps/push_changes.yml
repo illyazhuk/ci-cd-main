@@ -1,0 +1,14 @@
+name: Push changes to target branch
+runs-on: ubuntu-latest
+steps:
+  - name: Push changes to target branch
+    run: |
+      if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+        git push
+      else
+        if git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
+          exit 1
+        else
+          git push --set-upstream origin ${{ env.RELEASE_BRANCH }}
+        fi
+      fi
