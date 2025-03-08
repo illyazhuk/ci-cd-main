@@ -22,6 +22,7 @@ runs:
           repository: illyazhuk/client1
           path: default/procentric/app/client1
           ref: ${{ inputs.client1_branch }}
+        shell: bash  # Specify the shell
 
       - name: Checkout submodule client2
         uses: actions/checkout@v4

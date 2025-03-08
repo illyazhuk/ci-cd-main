@@ -1,5 +1,5 @@
 name: Commit updated submodule pointers
-description:
+description: 'Commit updated submodule pointers'
 inputs:
   github_user_email:
     description: provide user email
