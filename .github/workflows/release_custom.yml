@@ -33,7 +33,7 @@ jobs:
         with:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
-      - name: Checking user input parameters 
+      - name: Checking user input parameters
         uses: ./steps/check_user_input.yml
 
       - name: Target branch selection
