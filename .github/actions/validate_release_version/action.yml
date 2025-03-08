@@ -1,11 +1,16 @@
 name: Checking release branch exist
+description: The releasebranch to check for existence
+inputs:
+  release_version:
+    description: 'Version release validation'
+    required: true
 runs:
     using: "composite"
     steps:
       - name: Validate and check release version
         run: |
                 # Get the release version from the input
-                RELEASE_VERSION=${{ github.event.inputs.release_version }}
+                RELEASE_VERSION=${{ inputs.release_version }}
                 echo "Validate release version compliance"
                 # Validate the version format (e.g. v1.2.3)
                 if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -28,10 +33,10 @@ runs:
                 else
                     # Compare versions
                     if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
-                    echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
-                    exit 1
+                        echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
+                        exit 1
                     else
-                    echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                        echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
                     fi
                 fi
         shell: bash  # Specify the shell

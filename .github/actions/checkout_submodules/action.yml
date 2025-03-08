@@ -1,20 +1,33 @@
 name: Checkout submodules
+description: Checkout for client1 and client2
+inputs:
+  github_token:
+    description: 'token for authentification'
+    required: true
+
+  client1_branch:
+    description: 'Checkout fot client1 repo'
+    required: true
+  
+  client2_branch:
+    description: 'Checkout fot client2 repo'
+    required: true
 runs:
     using: "composite"
     steps:
       - name: Checkout submodule client1
         uses: actions/checkout@v4
         with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+          token: '${{ inputs.github_token }}'
           repository: illyazhuk/client1
           path: default/procentric/app/client1
-          ref: ${{ env.CLIENT1_BRANCH }}
+          ref: ${{ inputs.client1_branch }}
 
       - name: Checkout submodule client2
         uses: actions/checkout@v4
         with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+          token: '${{ inputs.github_token }}'
           repository: illyazhuk/client2
           path: default/remote/client2
-          ref: ${{ env.CLIENT2_BRANCH }}
+          ref: ${{ inputs.client2_branch }}
         shell: bash  # Specify the shell

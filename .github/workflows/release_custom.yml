@@ -45,20 +45,22 @@ jobs:
             target_branch: ${{ github.event.inputs.client1_branch }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Target branch selection
-        run: |
-          $REMOTE_REPOSITORY_URL="https://api.github.com/repos/illyazhuk/client2/branches"
-          $TARGET_BRANCH=${{ github.event.inputs.client2_branch }}
-
-      - name: Checking if target branch exists
-        uses: ./.github/actions/check_branch_exists
+      - name: Checking if target branch exist
+        uses: ./.github/actions/check_branch_exist
+        with: 
+            remote_repository_url: "https://api.github.com/repos/illyazhuk/client2/branches"
+            target_branch: ${{ github.event.inputs.client2_branch }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if release branch already exists
         uses: ./.github/actions/check_release_branch_exist 
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
 
       - name: Validate and check release version
         uses: ./.github/actions/validate_release_version 
-
+        with:
+             release_version: ${{ github.event.inputs.release_version }}
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
@@ -67,15 +69,29 @@ jobs:
 
       - name: Checkout to a new branch
         uses: ./.github/actions/checkout_to_new_branch
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
             
       - name: Checkout submodules
         uses: ./.github/actions/checkout_submodules
+        with:
+             github_token: ${{ secrets.GITHUB_TOKEN }}
+             client1_branch: ${{ github.event.inputs.client1_branch }}
+             client2_branch: ${{ github.event.inputs.client2_branch }}
 
       - name: Commit updated submodule pointers
         uses: ./.github/actions/commit_updated_submodule_pointers
+        with: 
+             github_user_email: "actions@github.com"
+             github_username: "GitHub Actions"
 
       - name: Push changes to target branch
         uses: ./.github/actions/push_changes
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
 
       - name: Create and push release tag
         uses: ./.github/actions/create_release_tag
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
+             release_tag: ${{ github.event.inputs.release_tag }}

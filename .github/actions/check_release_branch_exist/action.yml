@@ -1,4 +1,9 @@
 name: Checking release branch exist
+description: Check if release branch already exists
+inputs:
+    release_branch:
+     description: 'validation of release branch'
+     required: true  
 runs:
     using: "composite"
     steps:
@@ -6,15 +11,15 @@ runs:
         run: |
               # Check if the release branch is main or master
               echo "Validate specified release branch compliance"
-              if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
+              if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
                 echo "Skip validation for main/master branch"
               else
                 # Ensure the branch doesn't already exist on the remote to prevent accidental overwrite
-                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.release_branch }}"; then
-                  echo "${{ github.event.inputs.release_branch }} already exists on remote, creation not allowed."
+                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ inputs.release_branch }}"; then
+                  echo "${{ inputs.release_branch }} already exists on remote, creation not allowed."
                   exit 1
                 else
-                  echo "${{ github.event.inputs.release_branch }} does not exist on remote, creation allowed."
+                  echo "${{ inputs.release_branch }} does not exist on remote, creation allowed."
                 fi
               fi
         shell: bash  # Specify the shell
