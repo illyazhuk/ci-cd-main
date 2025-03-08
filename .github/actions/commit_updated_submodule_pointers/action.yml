@@ -1,7 +1,6 @@
 name: Commit updated submodule pointers
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Commit updated submodule pointers
         run: |
@@ -14,3 +13,4 @@ runs:
           git add .
           echo "Creating commit with updates for submodules"
           git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
+        shell: bash  # Specify the shell

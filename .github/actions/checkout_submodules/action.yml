@@ -1,7 +1,6 @@
 name: Checkout submodules
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Checkout submodule client1
         uses: actions/checkout@v4
@@ -18,3 +17,4 @@ runs:
           repository: illyazhuk/client2
           path: default/remote/client2
           ref: ${{ env.CLIENT2_BRANCH }}
+        shell: bash  # Specify the shell

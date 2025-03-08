@@ -1,7 +1,6 @@
 name: Checkout to a new branch
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Checkout to a new branch
         run: |
@@ -15,3 +14,4 @@ runs:
             echo "Switching to a new branch ${{ env.RELEASE_BRANCH }}"
             git checkout -b ${{ env.RELEASE_BRANCH }}
           fi
+        shell: bash  # Specify the shell

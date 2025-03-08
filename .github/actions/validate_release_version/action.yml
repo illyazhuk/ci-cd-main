@@ -1,7 +1,6 @@
 name: Checking release branch exist
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Validate and check release version
         run: |
@@ -35,3 +34,4 @@ runs:
                     echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
                     fi
                 fi
+        shell: bash  # Specify the shell

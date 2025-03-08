@@ -1,7 +1,6 @@
 name: Checking branch exist
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Checking if target branch exists
         run: |
@@ -23,3 +22,4 @@ runs:
             echo "Error: $TARGET_BRANCH not found on remote"
             exit 1
           fi
+        shell: bash  # Specify the shell

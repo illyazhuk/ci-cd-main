@@ -1,7 +1,6 @@
 name: Manage release version
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Manage release version
         run: |
@@ -42,3 +41,4 @@ runs:
           fi
 
           echo "RELEASE_TAG=$NEW_VERSION" >> $GITHUB_ENV
+        shell: bash  # Specify the shell

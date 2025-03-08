@@ -1,7 +1,6 @@
 name: Create and push release tag
 runs:
     using: "composite"
-    shell: bash  # Specify the shell
     steps:
       - name: Create and push release tag
         run: |
@@ -11,3 +10,4 @@ runs:
           else
               echo "Custom target branch - release tag is not allowed"
           fi
+        shell: bash  # Specify the shell
