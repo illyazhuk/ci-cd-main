@@ -43,6 +43,7 @@ jobs:
         with: 
             remote_repository_url: "https://api.github.com/repos/illyazhuk/client1/branches"
             target_branch: ${{ github.event.inputs.client1_branch }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Target branch selection
         run: |
