@@ -1,6 +1,7 @@
 name: Manage release version
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Manage release version
         run: |

@@ -1,6 +1,7 @@
 name: Checking branch exist
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Checking if target branch exists
         run: |

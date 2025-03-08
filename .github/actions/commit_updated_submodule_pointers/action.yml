@@ -1,6 +1,7 @@
 name: Commit updated submodule pointers
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Commit updated submodule pointers
         run: |

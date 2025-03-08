@@ -1,6 +1,7 @@
 name: Push changes to target branch
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Push changes to target branch
         run: |

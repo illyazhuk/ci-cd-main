@@ -1,6 +1,7 @@
 name: Checking release branch exist
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Check if release branch already exists
         run: |

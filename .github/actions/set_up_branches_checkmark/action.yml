@@ -1,6 +1,7 @@
 name: Set up branches based on checkmark input
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Set up branches based on checkmark input
         id: set_branches

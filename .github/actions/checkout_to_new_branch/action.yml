@@ -1,6 +1,7 @@
 name: Checkout to a new branch
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Checkout to a new branch
         run: |

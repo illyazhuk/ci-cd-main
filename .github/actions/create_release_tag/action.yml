@@ -1,6 +1,7 @@
 name: Create and push release tag
 runs:
     using: "composite"
+    shell: bash  # Specify the shell
     steps:
       - name: Create and push release tag
         run: |
