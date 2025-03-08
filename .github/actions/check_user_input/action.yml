@@ -1,5 +1,5 @@
 name: 'Check User Input'
-description: 'Checks if the specified release branch exists on the remote'
+description: 'Checking user input'
 
 inputs:
   build_origin_branch:

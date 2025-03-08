@@ -1,4 +1,13 @@
 name: Checking branch exist
+description: The branch to check for existence
+inputs:
+  target_branch:
+    description: 'The branch to check for existence'
+    required: true
+
+  remote_repository_url:
+    description: 'Remote repository path'
+    required: true
 runs:
     using: "composite"
     steps:
@@ -6,7 +15,7 @@ runs:
         run: |
           echo "Fetching available branches for target..."
           response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "$REMOTE_REPOSITORY_URL")
+          ${{ inputs.remote_repository_url }})
     
           # Check if curl was successful
           if [ $? -ne 0 ]; then
@@ -16,10 +25,10 @@ runs:
           echo "Successfully fetched available branches from remote"
 
           # Check if the branch exists in the fetched response
-          if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q "$TARGET_BRANCH"; then
-            echo "Found "$TARGET_BRANCH" on remote"
+          if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q ${{ inputs.target_branch }}; then
+            echo "Found ${{ inputs.target_branch }} on remote"
           else 
-            echo "Error: $TARGET_BRANCH not found on remote"
+            echo "Error: ${{ inputs.target_branch }} not found on remote"
             exit 1
           fi
         shell: bash  # Specify the shell

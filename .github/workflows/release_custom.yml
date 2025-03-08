@@ -38,13 +38,11 @@ jobs:
         with: 
             build_origin_branch: ${{ github.event.inputs.build_origin_branch }}
 
-      - name: Target branch selection
-        run: |
-          $REMOTE_REPOSITORY_URL="https://api.github.com/repos/illyazhuk/client1/branches"
-          $TARGET_BRANCH=${{ github.event.inputs.client1_branch }}
-
       - name: Checking if target branch exists
         uses: ./.github/actions/check_branch_exists
+        with: 
+            remote_repository_url: "https://api.github.com/repos/illyazhuk/client1/branches"
+            target_branch: ${{ github.event.inputs.client1_branch }}
 
       - name: Target branch selection
         run: |
