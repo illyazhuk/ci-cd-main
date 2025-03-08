@@ -1,18 +1,19 @@
 name: Checkout submodules
-runs-on: ubuntu-latest
-steps:
-  - name: Checkout submodule client1
-    uses: actions/checkout@v4
-    with:
-      token: '${{ secrets.GITHUB_TOKEN }}'
-      repository: illyazhuk/client1
-      path: default/procentric/app/client1
-      ref: ${{ env.CLIENT1_BRANCH }}
+runs:
+    using: "composite"
+    steps:
+      - name: Checkout submodule client1
+        uses: actions/checkout@v4
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          repository: illyazhuk/client1
+          path: default/procentric/app/client1
+          ref: ${{ env.CLIENT1_BRANCH }}
 
-  - name: Checkout submodule client2
-    uses: actions/checkout@v4
-    with:
-      token: '${{ secrets.GITHUB_TOKEN }}'
-      repository: illyazhuk/client2
-      path: default/remote/client2
-      ref: ${{ env.CLIENT2_BRANCH }}
+      - name: Checkout submodule client2
+        uses: actions/checkout@v4
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          repository: illyazhuk/client2
+          path: default/remote/client2
+          ref: ${{ env.CLIENT2_BRANCH }}

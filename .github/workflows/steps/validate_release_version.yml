@@ -1,35 +1,36 @@
 name: Checking release branch exist
-runs-on: ubuntu-latest
-steps:
-  - name: Validate and check release version
-    run: |
-            # Get the release version from the input
-            RELEASE_VERSION=${{ github.event.inputs.release_version }}
-            echo "Validate release version compliance"
-            # Validate the version format (e.g. v1.2.3)
-            if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Error: Invalid version format. The version should be in the format (e.g. v1.2.3)"
-                exit 1
-            fi
-
-            echo "Fetching latest tag from repo"
-            # Get the latest tag from the repository
-                LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
-
-            if [ "$LATEST_TAG" = "none" ]; then
-                echo "Warning: No tags found in the repository."
-                LATEST_TAG="0.0.0"  # Set a default version if needed
-            fi
-            
-            # If no tags are found, set a default version
-            if [ -z "$LATEST_TAG" ]; then
-                echo "No tags found in the repository. This will be the first release."
-            else
-                # Compare versions
-                if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
-                echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
-                exit 1
-                else
-                echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
+runs:
+    using: "composite"
+    steps:
+      - name: Validate and check release version
+        run: |
+                # Get the release version from the input
+                RELEASE_VERSION=${{ github.event.inputs.release_version }}
+                echo "Validate release version compliance"
+                # Validate the version format (e.g. v1.2.3)
+                if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "Error: Invalid version format. The version should be in the format (e.g. v1.2.3)"
+                    exit 1
                 fi
-            fi
+
+                echo "Fetching latest tag from repo"
+                # Get the latest tag from the repository
+                    LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+
+                if [ "$LATEST_TAG" = "none" ]; then
+                    echo "Warning: No tags found in the repository."
+                    LATEST_TAG="0.0.0"  # Set a default version if needed
+                fi
+            
+                # If no tags are found, set a default version
+                if [ -z "$LATEST_TAG" ]; then
+                    echo "No tags found in the repository. This will be the first release."
+                else
+                    # Compare versions
+                    if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
+                    echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
+                    exit 1
+                    else
+                    echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                    fi
+                fi

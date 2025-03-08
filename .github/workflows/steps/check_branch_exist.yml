@@ -1,23 +1,24 @@
 name: Checking branch exist
-runs-on: ubuntu-latest
-steps:
-  - name: Checking if target branch exists
-    run: |
-      echo "Fetching available branches for target..."
-      response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-      "$REMOTE_REPOSITORY_URL")
+runs:
+    using: "composite"
+    steps:
+      - name: Checking if target branch exists
+        run: |
+          echo "Fetching available branches for target..."
+          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "$REMOTE_REPOSITORY_URL")
     
-      # Check if curl was successful
-      if [ $? -ne 0 ]; then
-        echo "Error: Failed to fetch branches for target"
-        exit 1
-      fi
-      echo "Successfully fetched available branches from remote"
+          # Check if curl was successful
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to fetch branches for target"
+            exit 1
+          fi
+          echo "Successfully fetched available branches from remote"
 
-      # Check if the branch exists in the fetched response
-      if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q "$TARGET_BRANCH"; then
-        echo "Found "$TARGET_BRANCH" on remote"
-      else 
-        echo "Error: $TARGET_BRANCH not found on remote"
-        exit 1
-      fi
+          # Check if the branch exists in the fetched response
+          if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q "$TARGET_BRANCH"; then
+            echo "Found "$TARGET_BRANCH" on remote"
+          else 
+            echo "Error: $TARGET_BRANCH not found on remote"
+            exit 1
+          fi

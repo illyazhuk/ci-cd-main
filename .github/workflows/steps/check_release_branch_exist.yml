@@ -1,18 +1,19 @@
 name: Checking release branch exist
-runs-on: ubuntu-latest
-steps:
-  - name: Check if release branch already exists
-    run: |
-          # Check if the release branch is main or master
-          echo "Validate specified release branch compliance"
-          if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
-            echo "Skip validation for main/master branch"
-          else
-            # Ensure the branch doesn't already exist on the remote to prevent accidental overwrite
-            if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.release_branch }}"; then
-              echo "${{ github.event.inputs.release_branch }} already exists on remote, creation not allowed."
-              exit 1
-            else
-              echo "${{ github.event.inputs.release_branch }} does not exist on remote, creation allowed."
-            fi
-          fi
+runs:
+    using: "composite"
+    steps:
+      - name: Check if release branch already exists
+        run: |
+              # Check if the release branch is main or master
+              echo "Validate specified release branch compliance"
+              if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
+                echo "Skip validation for main/master branch"
+              else
+                # Ensure the branch doesn't already exist on the remote to prevent accidental overwrite
+                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.release_branch }}"; then
+                  echo "${{ github.event.inputs.release_branch }} already exists on remote, creation not allowed."
+                  exit 1
+                else
+                  echo "${{ github.event.inputs.release_branch }} does not exist on remote, creation allowed."
+                fi
+              fi

@@ -1,15 +1,16 @@
 name: Checkout to a new branch
-runs-on: ubuntu-latest
-steps:
-  - name: Checkout to a new branch
-    run: |
-      echo "Configuring branch on origin repository"
-      if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
-        echo "Skip checkout for main/master branch"
-      elif git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
-        echo "Error: ${{ env.RELEASE_BRANCH }} already exists on Remote"
-        exit 1
-      else
-        echo "Switching to a new branch ${{ env.RELEASE_BRANCH }}"
-        git checkout -b ${{ env.RELEASE_BRANCH }}
-      fi
+runs:
+    using: "composite"
+    steps:
+      - name: Checkout to a new branch
+        run: |
+          echo "Configuring branch on origin repository"
+          if [[ "${{ env.RELEASE_BRANCH }}" == "main" ]] || [[ "${{ env.RELEASE_BRANCH }}" == "master" ]]; then
+            echo "Skip checkout for main/master branch"
+          elif git ls-remote --heads origin "${{ env.RELEASE_BRANCH }}" | grep -q "${{ env.RELEASE_BRANCH }}"; then
+            echo "Error: ${{ env.RELEASE_BRANCH }} already exists on Remote"
+            exit 1
+          else
+            echo "Switching to a new branch ${{ env.RELEASE_BRANCH }}"
+            git checkout -b ${{ env.RELEASE_BRANCH }}
+          fi
