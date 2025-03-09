@@ -21,35 +21,35 @@ jobs:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
       - name: Set up branches based on checkmark input
-        uses: ./steps/set_up_branches_checkmark
+        uses: ./.github/actions/set_up_branches_checkmark
         with:
              main_checkmark: ${{ github.event.inputs.main_checkmark }}
 
       - name: Checkout origin submodules
-        uses: ./steps/checkout_submodules
+        uses: ./.github/actions/checkout_submodules
         with:
              github_token: ${{ secrets.GITHUB_TOKEN }}
              client1_branch: $CLIENT1_BRANCH
              client2_branch: $CLIENT2_BRANCH
 
       - name: Commit updated submodule pointers
-        uses: ./steps/update_submodule_pointers
+        uses: ./.github/actions/update_submodule_pointers
         with: 
              github_user_email: "actions@github.com"
              github_username: "GitHub Actions"
 
       - name: Manage release version
-        uses: ./steps/manage_release_version
+        uses: ./.github/actions/manage_release_version
         with: 
              release_version: ${{ github.event.inputs.release_version }}
 
       - name: Update release branch
-        uses: ./steps/update_release_branch
+        uses: ./.github/actions/update_release_branch
         with:
              release_branch: $RELEASE_BRANCH
     
       - name: Set release tag
-        uses: ./steps/set_release_tag
+        uses: ./.github/actions/set_release_tag
         with:
              release_branch: $RELEASE_BRANCH
 
