@@ -13,8 +13,8 @@ runs:
       - name: Commit updated submodule pointers
         run: |
           echo "Configuring user for a commit"
-          git config --global user.email "${{ github_user_email }}"
-          git config --global user.name "${{ github_username }}"
+          git config --global user.email "${{ inputs.github_user_email }}"
+          git config --global user.name "${{ inputs.github_username }}"
           echo "Check difference in submodule pointers"
           git diff
           echo "Adding updated code"
