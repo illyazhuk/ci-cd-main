@@ -8,7 +8,7 @@ on:
         type: boolean
         required: true
       release_version:
-        description: 'Enter the release version (e.g. v1.2.3)'
+        description: 'Enter the release version (e.g. 1.2.3)'
         required: true
 
 jobs:
@@ -22,24 +22,33 @@ jobs:
 
       - name: Set up branches based on checkmark input
         id: set_branches
-        uses: ./steps/set_up_branches_checkmark.yml
+        uses: ./steps/set_up_branches_checkmark
 
-      - name: Checkout submodules
-        uses: ./steps/checkout_submodules.yml
-
-      - name: Checkout to a new branch
-        uses: ./steps/chrckout_to_new_branch.yml
+      - name: Checkout origin submodules
+        uses: ./steps/checkout_submodules
+        with:
+             github_token: ${{ secrets.GITHUB_TOKEN }}
+             client1_branch: $CLIENT1_BRANCH
+             client2_branch: $CLIENT2_BRANCH
 
       - name: Commit updated submodule pointers
-        uses: ./steps/commit_updated_submodule_pointers.yml
+        uses: ./steps/update_submodule_pointers
+        with: 
+             github_user_email: "actions@github.com"
+             github_username: "GitHub Actions"
 
-      - name: manage-release-version
-        uses: ./steps/manage_release_version.yml 
+      - name: Manage release version
+        uses: ./steps/manage_release_version
+        with: 
+             release_version: ${{ github.event.inputs.release_version }}
 
-      - name: Push changes to target branch
-        uses: ./steps/push_changes.yml
+      - name: Update release branch
+        uses: ./steps/update_release_branch
+        with:
+             release_branch: $RELEASE_BRANCH
     
-      - name: Create and push release tag
-        uses: ./steps/create_release_tag.yml
-
+      - name: Set release tag
+        uses: ./steps/set_release_tag
+        with:
+             release_branch: $RELEASE_BRANCH
 

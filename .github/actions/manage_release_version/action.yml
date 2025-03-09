@@ -1,11 +1,16 @@
 name: Manage release version
+description: Validate user input or default to auto-increment release version
+inputs:
+    release_version:
+        description: 'Set desired release tag'
+        required: true
 runs:
     using: "composite"
     steps:
-      - name: Manage release version
+      - name: Determine release version
         run: |
           USER_VERSION_VALID=false
-          RELEASE_VERSION="${{ github.event.inputs.release_version }}"
+          RELEASE_VERSION="${{ inputs.release_version }}"
           echo "Validate release version compliance"
 
           if [[ ! "$RELEASE_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -40,5 +45,5 @@ runs:
               fi
           fi
 
-          echo "RELEASE_TAG=$NEW_VERSION" >> $GITHUB_ENV
-        shell: bash  # Specify the shell
+          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        shell: bash

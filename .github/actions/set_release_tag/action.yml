@@ -7,7 +7,7 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: C
+      - name: Verify release tag
         run: |
           # Ensure RELEASE_VERSION is set
           if [ -z "${{ inputs.RELEASE_VERSION }}" ]; then
