@@ -61,6 +61,7 @@ jobs:
         uses: ./.github/actions/validate_release_version 
         with:
              release_version: ${{ github.event.inputs.release_version }}
+
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
@@ -94,4 +95,5 @@ jobs:
         uses: ./.github/actions/create_release_tag
         with:
              release_branch: ${{ github.event.inputs.release_branch }}
-             release_tag: ${{ github.event.inputs.release_tag }}
+             release_tag: $RELEASE_VERSION #${{ github.event.inputs.release_version }}
+

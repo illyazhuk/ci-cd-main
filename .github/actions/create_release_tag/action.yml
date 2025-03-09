@@ -13,6 +13,7 @@ runs:
     steps:
       - name: Create and push release tag
         run: |
+          echo "RELEASE_VERSION is $RELEASE_VERSION"
           if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
               git tag -a "${{ inputs.release_tag }}" -m "Release "${{ inputs.release_tag }}""
               git push origin "${{ inputs.release_tag }}"

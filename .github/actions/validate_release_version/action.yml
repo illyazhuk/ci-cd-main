@@ -37,6 +37,7 @@ runs:
                         exit 1
                     else
                         echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
+                        echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
                     fi
                 fi
         shell: bash  # Specify the shell
