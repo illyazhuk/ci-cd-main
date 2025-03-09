@@ -21,8 +21,9 @@ jobs:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
       - name: Set up branches based on checkmark input
-        id: set_branches
         uses: ./steps/set_up_branches_checkmark
+        with:
+             main_checkmark: ${{ github.event.inputs.main_checkmark }}
 
       - name: Checkout origin submodules
         uses: ./steps/checkout_submodules
