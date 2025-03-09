@@ -15,6 +15,11 @@ inputs:
 runs:
     using: "composite"
     steps:
+      - name: Debug Log 
+        run: |
+            echo "C1: ${{ inputs.client1_branch }}"
+            echo "C2: ${{ inputs.client2_branch }}"
+
       - name: Checkout submodule client1
         uses: actions/checkout@v4
         with:
