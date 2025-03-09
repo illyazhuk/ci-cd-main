@@ -12,9 +12,9 @@ runs:
           echo "Validating checkmark set"
           if [ "${{ inputs.main_checkmark }}" == "true" ]; then
             echo "Building from main branches"
-            echo "CLIENT1_BRANCH='main'" >> $GITHUB_ENV
-            echo "CLIENT2_BRANCH='main'" >> $GITHUB_ENV
-            echo "RELEASE_BRANCH='main'" >> $GITHUB_ENV
+            echo "CLIENT1_BRANCH=main" >> $GITHUB_ENV
+            echo "CLIENT2_BRANCH=main" >> $GITHUB_ENV
+            echo "RELEASE_BRANCH=main" >> $GITHUB_ENV
           else
             echo "Error: checkmark was not set"
             exit 1
