@@ -1,13 +1,13 @@
-name: Checkout to a new branch
-description: Validation and checkout to release branch
+name: Checkout to release branch
+description: Validation and checkout of release branch
 inputs:
   release_branch:
-    description: 'Release branch check'
+    description: 'Set desired release branch'
     required: true
 runs:
     using: "composite"
     steps:
-      - name: Checkout to a new branch
+      - name: Verify and checkout to a new branch
         run: |
           echo "Configuring branch on origin repository"
           if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
@@ -19,4 +19,4 @@ runs:
             echo "Switching to a new branch ${{ inputs.release_branch }}"
             git checkout -b ${{ inputs.release_branch }}
           fi
-        shell: bash  # Specify the shell
+        shell: bash 

@@ -1,20 +1,21 @@
-name: Checking release branch exist
-description: The releasebranch to check for existence
+name: Validate specified release version
+#@TODO: split to multiple steps
+description: Verify input for tag and compare release version
 inputs:
   release_version:
-    description: 'Version release validation'
+    description: 'Set desired release version'
     required: true
 runs:
     using: "composite"
     steps:
-      - name: Validate and check release version
+      - name: Confirm release version is valid
         run: |
                 # Get the release version from the input
                 RELEASE_VERSION=${{ inputs.release_version }}
                 echo "Validate release version compliance"
-                # Validate the version format (e.g. v1.2.3)
+                # Validate the version format (e.g. 1.2.3)
                 if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    echo "Error: Invalid version format. The version should be in the format (e.g. v1.2.3)"
+                    echo "Error: Invalid version format. The version should be in the format (e.g. 1.2.3)"
                     exit 1
                 fi
 
@@ -40,4 +41,4 @@ runs:
                         echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
                     fi
                 fi
-        shell: bash  # Specify the shell
+        shell: bash 
