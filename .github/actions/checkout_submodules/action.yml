@@ -19,6 +19,7 @@ runs:
         run: |
             echo "C1: ${{ inputs.client1_branch }}"
             echo "C2: ${{ inputs.client2_branch }}"
+        shell: bash
 
       - name: Checkout submodule client1
         uses: actions/checkout@v4
