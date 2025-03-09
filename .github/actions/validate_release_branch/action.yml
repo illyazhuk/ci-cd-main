@@ -1,13 +1,13 @@
-name: Checking release branch exist
-description: Check if release branch already exists
+name: Validate specified release branch compliance
+description: Validate release branch main/master or other non-existing branch
 inputs:
     release_branch:
-     description: 'validation of release branch'
+     description: 'Set desired release branch'
      required: true  
 runs:
     using: "composite"
     steps:
-      - name: Check if release branch already exists
+      - name: Confirm release branch compliance
         run: |
               # Check if the release branch is main or master
               echo "Validate specified release branch compliance"
@@ -22,4 +22,4 @@ runs:
                   echo "${{ inputs.release_branch }} does not exist on remote, creation allowed."
                 fi
               fi
-        shell: bash  # Specify the shell
+        shell: bash

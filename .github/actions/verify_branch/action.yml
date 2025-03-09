@@ -1,21 +1,21 @@
-name: Checking branch exist
-description: The branch to check for existence
+name: Verify specified branch exists
+description: Verify target branch exists on remote
 inputs:
   target_branch:
-    description: 'The branch to check for existence'
+    description: 'Set branch for verification'
     required: true
 
   remote_repository_url:
-    description: 'Remote repository path'
+    description: 'Set remote repository url'
     required: true
   
   github_token:
-    description: 'token for authentification'
+    description: 'Set token for authentification'
     required: true
 runs:
     using: "composite"
     steps:
-      - name: Checking if target branch exist
+      - name: Confirm remote repository contains target branch
         run: |
           echo "Fetching available branches for target..."
           response=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
@@ -35,4 +35,4 @@ runs:
             echo "Error: ${{ inputs.target_branch }} not found on remote"
             exit 1
           fi
-        shell: bash  # Specify the shell
+        shell: bash

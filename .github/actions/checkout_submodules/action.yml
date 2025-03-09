@@ -1,16 +1,16 @@
-name: Checkout submodules
-description: Checkout for client1 and client2
+name: Checkout origin submodules
+description: Checkout client1 and client2 submodules
 inputs:
   github_token:
     description: 'token for authentification'
     required: true
 
   client1_branch:
-    description: 'Checkout fot client1 repo'
+    description: 'Set target client1 branch'
     required: true
   
   client2_branch:
-    description: 'Checkout fot client2 repo'
+    description: 'Set target client2 branch'
     required: true
 runs:
     using: "composite"

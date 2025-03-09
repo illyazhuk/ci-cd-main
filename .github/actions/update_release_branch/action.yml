@@ -1,21 +1,24 @@
-name: Push changes to target branch
-description: push changes to target branch
+name: Update release branch
+description: Verify and update release branch
 inputs:
   release_branch:
-    description: 'The branch to check for existence'
+    description: 'Set desired release branch'
     required: true
 runs:
     using: "composite"
     steps:
-      - name: Push changes to target branch
+      - name: Push changes to release branch
         run: |
           if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
+            echo "Default release branch - push changes"
             git push
           else
             if git ls-remote --heads origin "${{ inputs.release_branch }}" | grep -q "${{ inputs.release_branch }}"; then
+              echo "Error: Push is not allowed. Branch already exists"
               exit 1
             else
+              echo "Create upstream for release branch"
               git push --set-upstream origin ${{ inputs.release_branch }}
             fi
           fi
-        shell: bash  # Specify the shell
+        shell: bash

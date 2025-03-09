@@ -1,0 +1,24 @@
+name: Set release tag
+description: 'Verify, create and push release tag'
+inputs:
+    release_branch:
+      description: 'Set target release branch'
+      required: true
+runs:
+    using: "composite"
+    steps:
+      - name: C
+        run: |
+          # Ensure RELEASE_VERSION is set
+          if [ -z "${{ inputs.RELEASE_VERSION }}" ]; then
+            echo "Error: RELEASE_VERSION is not set!"
+            exit 1
+          fi
+          echo "RELEASE_VERSION is $RELEASE_VERSION"
+          if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
+              git tag -a $RELEASE_VERSION -m "Release tag $RELEASE_VERSION"
+              git push origin $RELEASE_VERSION
+          else
+              echo "Custom target branch - release tag is not allowed"
+          fi
+        shell: bash 
