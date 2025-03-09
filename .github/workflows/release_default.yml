@@ -24,6 +24,11 @@ jobs:
         uses: ./.github/actions/set_up_branches_checkmark
         with:
              main_checkmark: ${{ github.event.inputs.main_checkmark }}
+      - name: Checkout origin submodules
+        run: |
+            echo "RB: $RELEASE_BRANCH"
+            echo "C1: $CLIENT1_BRANCH"
+            echo "C2: $CLIENT2_BRANCH"
 
       - name: Checkout origin submodules
         uses: ./.github/actions/checkout_submodules
