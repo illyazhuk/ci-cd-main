@@ -1,0 +1,4 @@
+1. Move all existing steps to separate yaml files (google of ask GPT for "composite" action qualifier)
+2. Check between both scripts what code is alike (code duplicated)
+3. Refactor alike steps to be based on variables and not actual values like inputs.client1_branch - let it be CLIENT1_BRANCH as in default action)
+4. Rewrite both jobs to use composite steps and only let them configure variables that impact the step flow

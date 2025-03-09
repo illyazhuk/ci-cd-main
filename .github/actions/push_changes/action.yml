@@ -1,0 +1,21 @@
+name: Push changes to target branch
+description: push changes to target branch
+inputs:
+  release_branch:
+    description: 'The branch to check for existence'
+    required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Push changes to target branch
+        run: |
+          if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
+            git push
+          else
+            if git ls-remote --heads origin "${{ inputs.release_branch }}" | grep -q "${{ inputs.release_branch }}"; then
+              exit 1
+            else
+              git push --set-upstream origin ${{ inputs.release_branch }}
+            fi
+          fi
+        shell: bash  # Specify the shell

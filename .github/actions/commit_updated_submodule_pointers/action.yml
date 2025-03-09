@@ -1,0 +1,24 @@
+name: Commit updated submodule pointers
+description: 'Commit updated submodule pointers'
+inputs:
+  github_user_email:
+    description: provide user email
+    required: true
+  github_username:
+    description: provide username
+    required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Commit updated submodule pointers
+        run: |
+          echo "Configuring user for a commit"
+          git config --global user.email "${{ github_user_email }}"
+          git config --global user.name "${{ github_username }}"
+          echo "Check difference in submodule pointers"
+          git diff
+          echo "Adding updated code"
+          git add .
+          echo "Creating commit with updates for submodules"
+          git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
+        shell: bash  # Specify the shell

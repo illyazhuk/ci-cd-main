@@ -33,110 +33,34 @@ jobs:
         with:
           fetch-depth: 0  # Ensures all branches and history are fetched
 
-      - name: Checking user input parameters 
-        run: |
-          # Ensure origin is correctly set
-          git remote -v || (echo "Error: No remote repository found." && exit 1)
+      - name: Checking user input parameters
+        uses: ./.github/actions/check_user_input
+        with: 
+            build_origin_branch: ${{ github.event.inputs.build_origin_branch }}
 
-          # Try fetching the remote branches and check if the specific branch exists
-          if git ls-remote --heads origin "${{ github.event.inputs.build_origin_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.build_origin_branch }}"; then
-            echo "Found ${{ github.event.inputs.build_origin_branch }} on remote"
-          else 
-            echo "Error: ${{ github.event.inputs.build_origin_branch }} not found on remote"
-            exit 1
-          fi
+      - name: Checking if target branch exist
+        uses: ./.github/actions/check_branch_exist
+        with: 
+            remote_repository_url: "https://api.github.com/repos/illyazhuk/client1/branches"
+            target_branch: ${{ github.event.inputs.client1_branch }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checking if client1 branch exists
-        run: |
-          echo "Fetching available branches for client1..."
-          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/illyazhuk/client1/branches")
-          
-          # Check if curl was successful
-          if [ $? -ne 0 ]; then
-            echo "Error: Failed to fetch branches for client1" # Edited from "Failed to fetch branches from GitHub API" to "Failed to fetch branches for client1"
-            exit 1
-          fi
-          echo "Successfully fetched available branches from remote"
-
-          # Check if the branch exists in the fetched response
-          if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q "${{ github.event.inputs.client1_branch }}"; then
-            echo "Found ${{ github.event.inputs.client1_branch }} on remote"
-          else 
-            echo "Error: ${{ github.event.inputs.client1_branch }} not found on remote"
-            exit 1
-          fi
-
-      - name: Checking if client2 branch exists
-        run: |
-          echo "Fetching available branches for client2..."
-          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/illyazhuk/client2/branches")
-          
-          # Check if curl was successful
-          if [ $? -ne 0 ]; then
-            echo "Error: Failed to fetch branches for client2" #Edited from "Failed to fetch branches from GitHub API" to "Failed to fetch branches for client2" 
-            exit 1
-          fi
-          echo "Successfully fetched available branches from remote"
-
-          # Check if the branch exists in the fetched response
-          if echo "$response" | jq '.[].name' | awk '{print $1}' | grep -q "${{ github.event.inputs.client2_branch }}"; then
-            echo "Found ${{ github.event.inputs.client2_branch }} on remote"
-          else 
-            echo "Error: ${{ github.event.inputs.client2_branch }} not found on remote"
-            exit 1
-          fi
+      - name: Checking if target branch exist
+        uses: ./.github/actions/check_branch_exist
+        with: 
+            remote_repository_url: "https://api.github.com/repos/illyazhuk/client2/branches"
+            target_branch: ${{ github.event.inputs.client2_branch }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if release branch already exists
-        run: |
-              # Check if the release branch is main or master
-              echo "Validate specified release branch compliance"
-              if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
-                echo "Skip validation for main/master branch"
-              else
-                # Ensure the branch doesn't already exist on the remote to prevent accidental overwrite
-                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}" | awk '{print $2}' | grep -q "refs/heads/${{ github.event.inputs.release_branch }}"; then
-                  echo "${{ github.event.inputs.release_branch }} already exists on remote, creation not allowed."
-                  exit 1
-                else
-                  echo "${{ github.event.inputs.release_branch }} does not exist on remote, creation allowed."
-                fi
-              fi
+        uses: ./.github/actions/check_release_branch_exist 
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
 
       - name: Validate and check release version
-        run: |
-          # Get the release version from the input
-          RELEASE_VERSION=${{ github.event.inputs.release_version }}
-          echo "Validate release version compliance"
-          # Validate the version format (e.g. v1.2.3)
-          if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid version format. The version should be in the format (e.g. v1.2.3)"
-            exit 1
-          fi
-
-          echo "Fetching latest tag from repo"
-          # Get the latest tag from the repository
-             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
-    
-          if [ "$LATEST_TAG" = "none" ]; then
-            echo "Warning: No tags found in the repository."
-            LATEST_TAG="0.0.0"  # Set a default version if needed
-          fi
-          
-          # If no tags are found, set a default version
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No tags found in the repository. This will be the first release."
-          else
-            # Compare versions
-            if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
-              echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
-              exit 1
-            else
-              echo "Release version $RELEASE_VERSION is valid and higher than the latest tag $LATEST_TAG."
-            fi
-          fi
-
+        uses: ./.github/actions/validate_release_version 
+        with:
+             release_version: ${{ github.event.inputs.release_version }}
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
@@ -144,74 +68,30 @@ jobs:
           submodules: recursive
 
       - name: Checkout to a new branch
-        run: |
-            echo "Configuring branch on origin repository"
-            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
-                echo "Skip checkout for main/master branch - already on main"
-
-            elif git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"| grep -q "${{ github.event.inputs.release_branch }}"; then
-                echo "Error: ${{ github.event.inputs.release_branch }} already exists on Remote"
-                exit 1
-            else
-                echo "Switching to a new branch ${{ github.event.inputs.release_branch }}"
-                git checkout -b ${{ github.event.inputs.release_branch }}
-            fi
+        uses: ./.github/actions/checkout_to_new_branch
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
             
-      - name: Checkout submodule client1
-        uses: actions/checkout@v4
+      - name: Checkout submodules
+        uses: ./.github/actions/checkout_submodules
         with:
-              token: '${{ secrets.GITHUB_TOKEN }}'
-              repository: illyazhuk/client1
-              path: default/procentric/app/client1
-              ref: ${{ github.event.inputs.client1_branch }} 
-      
-      - name: Checkout submodule client 2
-        uses: actions/checkout@v4
-        with:
-            token: '${{ secrets.GITHUB_TOKEN }}'
-            repository: illyazhuk/client2
-            path: default/remote/client2
-            ref: ${{ github.event.inputs.client2_branch }}      
+             github_token: ${{ secrets.GITHUB_TOKEN }}
+             client1_branch: ${{ github.event.inputs.client1_branch }}
+             client2_branch: ${{ github.event.inputs.client2_branch }}
 
       - name: Commit updated submodule pointers
-        run: |
-          echo "Configuring user for a commit"
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          echo "Check difference in submodule pointers"
-          git diff
-          echo "Adding updated code"
-          git add .
-          echo "Creating commit with updates for submodules"
-          git diff-index --quiet HEAD || git commit -m "Update submodules to latest branches"
-
+        uses: ./.github/actions/commit_updated_submodule_pointers
+        with: 
+             github_user_email: "actions@github.com"
+             github_username: "GitHub Actions"
+            
       - name: Push changes to target branch
-        run: |
-            echo "Validating possibility to push changes to target branch"
-            # Push to the target branch, ensuring it doesn't override an existing branch (except master/main)
-            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
-                echo "Target branch is main - Push updated state"
-                git push
-            else
-                echo "Ensure target branch would not be overwritten"
-                # Make sure the branch is not already pushed to prevent accidental overwrite
-                if git ls-remote --heads origin "${{ github.event.inputs.release_branch }}"| grep -q "${{ github.event.inputs.release_branch }}"; then
-                    echo "Branch already exists on remote, not pushing."
-                    exit 1
-                else
-                    echo "Create upstream to a new target branch"
-                    git push --set-upstream origin ${{ github.event.inputs.release_branch }}
-                fi
-            fi
+        uses: ./.github/actions/push_changes
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
 
       - name: Create and push release tag
-        run: |
-            echo "Configuring release tag"
-            if [[ "${{ github.event.inputs.release_branch }}" == "main" ]] || [[ "${{ github.event.inputs.release_branch }}" == "master" ]]; then
-                echo "Target branch is main - create a release tag"
-                RELEASE_VERSION=${{ github.event.inputs.release_version }}
-                git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
-                git push origin "$RELEASE_VERSION"
-            else
-                echo "Custom target branch - release tag is not allowed"
-            fi
+        uses: ./.github/actions/create_release_tag
+        with:
+             release_branch: ${{ github.event.inputs.release_branch }}
+             release_tag: ${{ github.event.inputs.release_tag }}

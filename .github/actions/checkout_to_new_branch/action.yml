@@ -1,0 +1,22 @@
+name: Checkout to a new branch
+description: Validation and checkout to release branch
+inputs:
+  release_branch:
+    description: 'Release branch check'
+    required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Checkout to a new branch
+        run: |
+          echo "Configuring branch on origin repository"
+          if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
+            echo "Skip checkout for main/master branch"
+          elif git ls-remote --heads origin "${{ inputs.release_branch }}" | grep -q "${{ inputs.release_branch }}"; then
+            echo "Error: ${{ inputs.release_branch }} already exists on Remote"
+            exit 1
+          else
+            echo "Switching to a new branch ${{ inputs.release_branch }}"
+            git checkout -b ${{ inputs.release_branch }}
+          fi
+        shell: bash  # Specify the shell
