@@ -1,0 +1,110 @@
+name: Release Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Choose release type (default/custom)'
+        required: true
+        default: 'default'
+        type: choice
+        options:
+          - default
+          - custom
+      main_checkmark:
+        description: 'Build from main branches (only for default release)'
+        default: false
+        type: boolean
+      build_origin_branch:
+        description: 'Enter origin branch (for custom release)'
+        required: false
+        default: ''
+      release_version:
+        description: 'Enter the release version (e.g. 1.2.3)'
+        required: true
+      client1_branch:
+        description: 'Branch for client1 (for custom release)'
+        required: false
+        default: 'main'
+      client2_branch:
+        description: 'Branch for client2 (for custom release)'
+        required: false
+        default: 'main'
+      release_branch:
+        description: 'Specify release branch (for custom release)'
+        required: false
+        default: 'main'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Shared: Checkout Repository
+      - name: Checkout origin (ci-cd-main) repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Default Release Only: Setup branches
+      - name: Set up branches based on checkmark input
+        if: ${{ github.event.inputs.release_type == 'default' }}
+        uses: ./.github/actions/set_up_branches_checkmark
+        with:
+          main_checkmark: ${{ github.event.inputs.main_checkmark }}
+
+      # Custom Release Only: Validate input branches
+      - name: Validate build origin branch
+        if: ${{ github.event.inputs.release_type == 'custom' }}
+        uses: ./.github/actions/validate_build_origin
+        with: 
+          build_origin_branch: ${{ github.event.inputs.build_origin_branch }}
+
+      - name: Verify branch exists for client1
+        if: ${{ github.event.inputs.release_type == 'custom' }}
+        uses: ./.github/actions/verify_branch
+        with: 
+          remote_repository_url: "https://api.github.com/repos/illyazhuk/client1/branches"
+          target_branch: ${{ github.event.inputs.client1_branch }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify branch exists for client2
+        if: ${{ github.event.inputs.release_type == 'custom' }}
+        uses: ./.github/actions/verify_branch
+        with: 
+          remote_repository_url: "https://api.github.com/repos/illyazhuk/client2/branches"
+          target_branch: ${{ github.event.inputs.client2_branch }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Shared: Checkout Submodules
+      - name: Checkout origin submodules
+        uses: ./.github/actions/checkout_submodules
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          client1_branch: ${{ github.event.inputs.client1_branch || env.CLIENT1_BRANCH }}
+          client2_branch: ${{ github.event.inputs.client2_branch || env.CLIENT2_BRANCH }}
+
+      # Custom Release Only: Configure release branch
+      - name: Configure release branch
+        if: ${{ github.event.inputs.release_type == 'custom' }}
+        uses: ./.github/actions/configure_release_branch
+        with:
+          release_branch: ${{ github.event.inputs.release_branch }}
+
+      # Shared: Commit updated submodules pointers
+      - name: Commit updated submodule pointers
+        uses: ./.github/actions/update_submodule_pointers
+        with: 
+          github_user_email: "actions@github.com"
+          github_username: "GitHub Actions"
+
+      # Shared: Update release branch
+      - name: Update release branch
+        uses: ./.github/actions/update_release_branch
+        with:
+          release_branch: ${{ github.event.inputs.release_branch || env.RELEASE_BRANCH }}
+
+      # Shared: Set release tag
+      - name: Set release tag
+        uses: ./.github/actions/set_release_tag
+        with:
+          release_branch: ${{ github.event.inputs.release_branch || env.RELEASE_BRANCH }}
