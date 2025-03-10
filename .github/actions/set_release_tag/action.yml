@@ -10,7 +10,7 @@ runs:
       - name: Verify release tag
         run: |
           # Ensure RELEASE_VERSION is set
-          if [ -z "${{ inputs.RELEASE_VERSION }}" ]; then
+          if [ -z "${{ env.RELEASE_VERSION }}" ]; then
             echo "Error: RELEASE_VERSION is not set!"
             exit 1
           fi
