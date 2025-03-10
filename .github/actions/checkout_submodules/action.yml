@@ -15,6 +15,12 @@ inputs:
 runs:
     using: "composite"
     steps:
+      - name: Print target submodule branches
+        run: |
+            echo "client1 branch: ${{ inputs.client1_branch }}"
+            echo "client2 branch: ${{ inputs.client2_branch }}"
+        shell: bash
+
       - name: Checkout submodule client1
         uses: actions/checkout@v4
         with:

@@ -1,12 +1,16 @@
 name: Set up branches based on checkmark input
+description: Default dependant branches to main
+inputs:
+    main_checkmark:
+        description: Checkmark set
+        required: true
 runs:
     using: "composite"
     steps:
       - name: Set up branches based on checkmark input
-        id: set_branches
         run: |
           echo "Validating checkmark set"
-          if [ "${{ github.event.inputs.main_checkmark }}" == "true" ]; then
+          if [ "${{ inputs.main_checkmark }}" == "true" ]; then
             echo "Building from main branches"
             echo "CLIENT1_BRANCH=main" >> $GITHUB_ENV
             echo "CLIENT2_BRANCH=main" >> $GITHUB_ENV
@@ -15,4 +19,4 @@ runs:
             echo "Error: checkmark was not set"
             exit 1
           fi
-        shell: bash  # Specify the shell
+        shell: bash

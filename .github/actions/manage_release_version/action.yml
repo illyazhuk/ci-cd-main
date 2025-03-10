@@ -1,32 +1,40 @@
 name: Manage release version
+description: Validate user input or default to auto-increment release version
+inputs:
+    release_version:
+        description: 'Set desired release tag'
+        required: true
 runs:
     using: "composite"
     steps:
-      - name: Manage release version
+      - name: Determine release version
         run: |
           USER_VERSION_VALID=false
-          RELEASE_VERSION="${{ github.event.inputs.release_version }}"
+          RELEASE_VERSION="${{ inputs.release_version }}"
           echo "Validate release version compliance"
 
           if [[ ! "$RELEASE_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo "Error: Invalid version format."
           else
               USER_VERSION_VALID=true
+              echo "Version format is valid"
           fi
 
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
 
           if [ "$LATEST_TAG" = "none" ]; then
               LATEST_TAG="0.0.0"
+              echo "No previous release tag, default tag will be 0.0.0"
           fi
 
           if [[ "$(echo -e "$RELEASE_VERSION\n$LATEST_TAG" | sort -V | head -n1)" == "$RELEASE_VERSION" ]]; then
-              echo "Error: Release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
+              echo "Error: Required release version $RELEASE_VERSION must be higher than the latest tag $LATEST_TAG."
               USER_VERSION_VALID=false
           fi
 
           if [ "$USER_VERSION_VALID" = true ]; then
               NEW_VERSION="$RELEASE_VERSION"
+              echo "Set release version from user input"
           else
               VERSION_PATTERN="^v?([0-9]+)\.([0-9]+)\.([0-9]+)$"
               if [[ "$LATEST_TAG" =~ $VERSION_PATTERN ]]; then
@@ -35,10 +43,13 @@ runs:
                 PATCH="${BASH_REMATCH[3]}"
                 PATCH=$((PATCH + 1))
                 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+                echo "Set auto-increment release version $NEW_VERSION"
               else
                 NEW_VERSION="0.0.1"
+                echo "Set first release version 0.0.1"
               fi
           fi
 
-          echo "RELEASE_TAG=$NEW_VERSION" >> $GITHUB_ENV
-        shell: bash  # Specify the shell
+          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "Save release version $NEW_VERSION to github env"
+        shell: bash

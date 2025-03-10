@@ -7,17 +7,19 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: C
+      - name: Verify release tag
         run: |
           # Ensure RELEASE_VERSION is set
-          if [ -z "${{ inputs.RELEASE_VERSION }}" ]; then
-            echo "Error: RELEASE_VERSION is not set!"
+          if [ -z "${{ env.RELEASE_VERSION }}" ]; then
+            echo "Error: RELEASE_VERSION is not set"
             exit 1
           fi
-          echo "RELEASE_VERSION is $RELEASE_VERSION"
+    
           if [[ "${{ inputs.release_branch }}" == "main" ]] || [[ "${{ inputs.release_branch }}" == "master" ]]; then
+              echo "Default release branch. Create and push release tag"
               git tag -a $RELEASE_VERSION -m "Release tag $RELEASE_VERSION"
               git push origin $RELEASE_VERSION
+              echo "RELEASE_VERSION is $RELEASE_VERSION"
           else
               echo "Custom target branch - release tag is not allowed"
           fi
