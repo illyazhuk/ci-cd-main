@@ -15,10 +15,10 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Debug Log 
+      - name: Print target submodule branches
         run: |
-            echo "C1: ${{ inputs.client1_branch }}"
-            echo "C2: ${{ inputs.client2_branch }}"
+            echo "client1 branch: ${{ inputs.client1_branch }}"
+            echo "client2 branch: ${{ inputs.client2_branch }}"
         shell: bash
 
       - name: Checkout submodule client1
