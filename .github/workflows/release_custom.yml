@@ -81,7 +81,7 @@ jobs:
              client2_branch: ${{ github.event.inputs.client2_branch }}
 
       - name: Commit updated submodules pointers
-        uses: ./.github/actions/update_submodules_pointers
+        uses: ./.github/actions/update_submodule_pointers
         with: 
              github_user_email: "actions@github.com"
              github_username: "GitHub Actions"
