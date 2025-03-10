@@ -39,18 +39,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      # Shared: Checkout Repository
-      - name: Checkout origin (ci-cd-main) repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       # Default Release Only: Setup branches
       - name: Set up branches based on checkmark input
         if: ${{ github.event.inputs.release_type == 'default' }}
         uses: ./.github/actions/set_up_branches_checkmark
         with:
           main_checkmark: ${{ github.event.inputs.main_checkmark }}
+      
+      # Shared: Checkout Repository
+      - name: Checkout origin (ci-cd-main) repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.BUILD_ORIGIN_BRANCH || inputs.build_origin_branch }}
 
       # Custom Release Only: Validate build origin branch
       - name: Validate build origin branch
